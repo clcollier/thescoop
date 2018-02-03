@@ -248,8 +248,26 @@ function downvote(item, username) {
   return item;
 }
 
-function createComment(){
-  
+function createComment(url, request){
+  const response = {};
+
+  const comment = {
+    id: database.nextCommentId++,
+    body: request.body.comment.body,
+    username: request.body.comment.username,
+    articleId: request.body.comment.articleId,
+    upvotedBy: [],
+    downvotedBy: []
+  };
+
+  database.comments[comment.id] = comment;
+  database.users[comment.username].commentIds.push(comment.id);
+  database.articles[comment.articleId].commentIds.push(comment.id);
+
+  response.body = {comment: comment};
+  response.status = 201;
+
+  return response;
 }
 
 // Write all code above this line.
