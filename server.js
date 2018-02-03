@@ -251,6 +251,11 @@ function downvote(item, username) {
 function createComment(url, request){
   const response = {};
 
+  if (!goodRequest(request) || !commentFieldsPresent(request.body.comment) || !userExists(request.body.comment.username) || !articleExists(request.body.comment.articleId)){
+    response.status = 400;
+    return response;
+  }
+
   const comment = {
     id: database.nextCommentId++,
     body: request.body.comment.body,
@@ -268,6 +273,22 @@ function createComment(url, request){
   response.status = 201;
 
   return response;
+}
+
+function commentFieldsPresent(comment){
+  return (comment.body && comment.username && comment.articleId);
+}
+
+function userExists(username){
+  return database.users[username];
+}
+
+function articleExists(id){
+  return Boolean(database.articles[id]);
+}
+
+function goodRequest(request){
+  return request.body && request.body.comment;
 }
 
 // Write all code above this line.
