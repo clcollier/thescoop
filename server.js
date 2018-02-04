@@ -36,7 +36,9 @@ const routes = {
     'PUT': updateComment,
     'DELETE': deleteComment
   },
-  '/comments/:id/upvote': {},
+  '/comments/:id/upvote': {
+    'PUT': upvoteComment
+  },
   '/comments/:id/downvote': {}
 };
 
@@ -325,6 +327,29 @@ function deleteComment(url, request){
   return response;
 }
 
+function upvoteComment(url, request){
+  const response = {};
+
+  if (!goodRequest(request)){
+    response.status = 400;
+    return response;
+  }
+
+  const id = Number(url.split('/').filter(substring => substring)[1]);
+  const username = request.body.username;
+
+  if (!userExists(username) || !commentExists(id)){
+    response.status = 400;
+    return response;
+  }
+
+  upvote(database.comments[id], username);
+
+  response.status = 200;
+  response.body = {comment: database.comments[id]};
+  return response;
+}
+
 function commentFieldsPresent(comment){
   return (comment.body && comment.username && comment.articleId);
 }
@@ -346,7 +371,12 @@ function validBody(body){
 }
 
 function goodRequest(request, lookFor){
-  return request.body && request.body[lookFor];
+  if (lookFor){
+      return request.body && request.body[lookFor];
+  }else{
+    return request.body;
+  }
+
 }
 
 // Write all code above this line.
