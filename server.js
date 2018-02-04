@@ -33,7 +33,8 @@ const routes = {
     'POST': createComment
   },
   '/comments/:id': {
-    'PUT': updateComment
+    'PUT': updateComment,
+    'DELETE': deleteComment
   },
   '/comments/:id/upvote': {},
   '/comments/:id/downvote': {}
@@ -299,6 +300,28 @@ function updateComment(url, request){
   database.comments[id].body = request.body.comment.body;
 
   response.status = 200;
+  return response;
+}
+
+function deleteComment(url, request){
+  const response = {};
+  const id = Number(url.split('/').filter(substring => substring)[1]);
+
+  if (!commentExists(id)){
+    response.status = 404;
+    return response;
+  }
+
+  const username = database.comments[id].username;
+  let index = database.users[username].commentIds.indexOf(id);
+  database.users[username].commentIds.splice(index, 1);
+
+  const articleId = database.comments[id].articleId;
+  index = database.articles[articleId].commentIds.indexOf(id);
+  database.articles[articleId].commentIds.splice(index, 1);
+
+  database.comments[id] = null;
+  response.status = 204;
   return response;
 }
 
