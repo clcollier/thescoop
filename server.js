@@ -32,7 +32,9 @@ const routes = {
   '/comments': {
     'POST': createComment
   },
-  '/comments/:id': {},
+  '/comments/:id': {
+    'PUT': updateComment
+  },
   '/comments/:id/upvote': {},
   '/comments/:id/downvote': {}
 };
@@ -251,7 +253,7 @@ function downvote(item, username) {
 function createComment(url, request){
   const response = {};
 
-  if (!goodRequest(request) || !commentFieldsPresent(request.body.comment) || !userExists(request.body.comment.username) || !articleExists(request.body.comment.articleId)){
+  if (!goodRequest(request, "comment") || !commentFieldsPresent(request.body.comment) || !userExists(request.body.comment.username) || !articleExists(request.body.comment.articleId)){
     response.status = 400;
     return response;
   }
@@ -275,20 +277,53 @@ function createComment(url, request){
   return response;
 }
 
+function updateComment(url, request){
+  const response = {};
+  const id = url.split('/').filter(substring => substring)[1];
+
+  if (!goodRequest(request, "comment")){
+    response.status = 400;
+    return response;
+  }
+
+  if (!commentExists(id)){
+    response.status = 404;
+    return response;
+  }
+
+  if(!validBody(request.body.comment.body)){
+    response.status = 400;
+    return response;
+  }
+
+  database.comments[id].body = request.body.comment.body;
+
+  response.status = 200;
+  return response;
+}
+
 function commentFieldsPresent(comment){
   return (comment.body && comment.username && comment.articleId);
 }
 
 function userExists(username){
-  return database.users[username];
+  return Boolean(database.users[username]);
 }
 
 function articleExists(id){
   return Boolean(database.articles[id]);
 }
 
-function goodRequest(request){
-  return request.body && request.body.comment;
+function commentExists(id){
+  return Boolean(database.comments[id]);
+}
+
+function validBody(body){
+  return Boolean(body);
+}
+
+function goodRequest(request, lookFor){
+  return request.body && request.body[lookFor];
 }
 
 // Write all code above this line.
