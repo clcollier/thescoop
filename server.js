@@ -39,7 +39,9 @@ const routes = {
   '/comments/:id/upvote': {
     'PUT': upvoteComment
   },
-  '/comments/:id/downvote': {}
+  '/comments/:id/downvote': {
+    'PUT': downvoteComment
+  }
 };
 
 function getUser(url, request) {
@@ -344,6 +346,29 @@ function upvoteComment(url, request){
   }
 
   upvote(database.comments[id], username);
+
+  response.status = 200;
+  response.body = {comment: database.comments[id]};
+  return response;
+}
+
+function downvoteComment(url, request){
+  const response = {};
+
+  if (!goodRequest(request)){
+    response.status = 400;
+    return response;
+  }
+
+  const id = Number(url.split('/').filter(substring => substring)[1]);
+  const username = request.body.username;
+
+  if (!userExists(username) || !commentExists(id)){
+    response.status = 400;
+    return response;
+  }
+
+  downvote(database.comments[id], username);
 
   response.status = 200;
   response.body = {comment: database.comments[id]};
